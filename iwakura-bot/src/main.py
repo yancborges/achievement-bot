@@ -9,6 +9,7 @@ import os
 import discord
 import re
 import time
+import requests
 
 from discord.ext.commands import Bot
 from discord.ext import commands
@@ -122,10 +123,38 @@ async def on_member_update(before, after):
     roles_gained = [r for r in roles_after if r not in roles_before]
     roles_lost = [r for r in roles_before if r not in roles_after]
     
+    # Triggering achievements based on avatar
+    #
+    # I have to compare them based on bytes,
+    # because discord uses the same url for all user profile pictures
+    # bimage = requests.get('https://cdn.discordapp.com' + before.avatar_url._url, stream=True).content
+    # aimage = requests.get('https://cdn.discordapp.com' + after.avatar_url._url, stream=True).content
+
+    # if bimage != aimage:
+    #    await iwakura.trigger_achievement(after.id, Doppleganger)
+
     # Triggering achievements based on roles
+    if config.get_attr('custom', 'citizen') in roles_gained:
+        await iwakura.trigger_achievement(after.id, MyHouseMyLife)
+
+    if config.get_attr('custom', 'nobility') in roles_gained:
+        await iwakura.trigger_achievement(after.id, SOFAMOUS)
+
+    if config.get_attr('custom', 'executioner') in roles_gained:
+        await iwakura.trigger_achievement(after.id, BloodStained)
+
+    if config.get_attr('custom', 'clergy') in roles_gained:
+        await iwakura.trigger_achievement(after.id, Blessed)
+
     if config.get_attr('custom', 'bunda_mole') in roles_gained:
-        # TODO: use class here
-        pass
+        await iwakura.trigger_achievement(after.id, Congratulations)
+
+    if config.get_attr('custom', 'servant') in roles_gained:
+        await iwakura.trigger_achievement(after.id, BrainWashed)
+
+    if config.get_attr('custom', 'subhuman') in roles_gained:
+        await iwakura.trigger_achievement(after.id, UnForastero)
+
 
 @client_discord.event
 async def on_message(message):    
@@ -156,6 +185,12 @@ async def on_message(message):
 
         if 'k' in message.content:
             await iwakura.trigger_achievement(message.author.id, TheJester, args=message)
+
+        if message.content.startswith('!play') or message.content.startswith('~>play'):
+            await iwakura.trigger_achievement(message.author.id, Lvl20Bard)
+
+        if len(message.content) >= 10 and message.content.upper() == message.content:
+            await iwakura.trigger_achievement(message.author.id, Charge)
 
         # Based on channel
         if message.channel.id == config.get_attr('custom', 'pokemon_channel'):

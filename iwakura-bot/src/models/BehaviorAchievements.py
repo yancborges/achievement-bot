@@ -599,8 +599,45 @@ class WheelOfFortune(Achievement):
         self.score_current += _size
 
 
+class Charge(Achievement):
+    """
+    Charrrrrrrrrrrge!! achievement. Triggered when
+    a message is sent fully uppercase with ten or more
+    characters.
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Charrrrrrrrrrge!!!!!'
+    achievement_description = 'YAAAAARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
 class MakeItDouble(Achievement):
     """
+    Make it double achievement. Triggered when
+    kdgauga command returns exactly the double
+
     Parameters
     ----------
 
@@ -617,6 +654,303 @@ class MakeItDouble(Achievement):
     score_total = 1
     achievement_name = 'Make it double'
     achievement_description = 'https://www.youtube.com/watch?v=UQy1bL9WdmY'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class Lvl20Bard(Achievement):
+    """
+    Lvl 20 bard achievement. Triggered when
+    sending 50 times the commands !play or ~>play
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 50
+    achievement_name = 'Lvl 20 Bard'
+    achievement_description = 'uOOOOOn'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class SOFAMOUS(Achievement):
+    """
+    SO FAMOUS achievement. earned when
+    user gets the role nobility
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'SO FAMOUS'
+    achievement_description = 'Loving you is cherry pie'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class MyHouseMyLife(Achievement):
+    """
+    My house my life achievement. earned when
+    user gets the role citizen
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'My house, my life'
+    achievement_description = 'In this world, nothing is certain except death and taxes'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class BloodStained(Achievement):
+    """
+    Blood stained achievement. earned when
+    user gets the executioner
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Blood steined'
+    achievement_description = 'They gonna lose their heads'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class Blessed(Achievement):
+    """
+    Blessed achievement. earned when
+    user gets the role clergy
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Blessed'
+    achievement_description = 'Omenare imperavi emunari'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class Congratulations(Achievement):
+    """
+    Congratulations? achievement. earned when
+    user gets the role bunda mole
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Congratulations?'
+    achievement_description = 'God you\'re pathetic'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class BrainWashed(Achievement):
+    """
+    Brain washed achievement. earned when
+    user gets the role robot servants
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Brain washed'
+    achievement_description = 'I need your clothes, your boots, and your motorcycle'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class Ni(Achievement):
+    """
+    Niiiiiii achievement. earned when
+    user gets the role knight
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Niiiiii'
+    achievement_description = 'Niiiiiiiiiiiiiiiiiiiiii'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def _score(self):
+        self.score_current += 1
+
+
+class UnForastero(Achievement):
+    """
+    ¡Un forastero! achievement. earned when
+    user gets the role subhuman
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = '¡Un forastero!'
+    achievement_description = 'I could care less what people think'
     
     def __init__(self, discord_user_id, db_client, args=None):
         self.args = args
