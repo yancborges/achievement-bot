@@ -4,6 +4,9 @@ All achievements inherits BaseModel.Achievement class.
 """
 
 import random
+import re
+
+from discord import message
 from .BaseModel import Achievement
 
 class YouTried(Achievement):
@@ -66,9 +69,19 @@ class JoinTheBowdyHouse(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        valid_images = 0
+        config = self.args[0]
+        message = self.args[1]
+        if hasattr(message.channel, 'category') and message.channel.category.id == config.get_attr('custom', 'lewd_category'):
+            for att in message.attachments:
+                if re.findall(r'(\.((png)|(jpeg)|(jpg)|(gif)))$', att.url):
+                    valid_images += 1
+        return valid_images
 
     def _score(self):
-        self.score_current += 1
+        for valid in self.verify:
+            self.score_current += 1
 
 
 class HeraldIntern(Achievement):
@@ -98,9 +111,14 @@ class HeraldIntern(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if re.findall(r'<@!\d+>', self.args[0].content):
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class PigeonIntern(Achievement):
@@ -292,9 +310,16 @@ class BeastMaster(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        config = self.args[0]
+        message = self.args[1]
+        if message.channel.id == config.get_attr('custom', 'pokemon_channel'):
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class AncientKnowledge(Achievement):
@@ -324,9 +349,14 @@ class AncientKnowledge(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if '!kdgauga' in self.args[0] or '!diegao' in self.args[0]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
     
 
 class ImARogue(Achievement):
@@ -389,6 +419,10 @@ class TheJester(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if 'k' in self.args.content:
+            return True
+        return False
 
     def _score(self):
         self.score_current += self.args.content.count('k')
@@ -445,7 +479,7 @@ class MisleadLatter(Achievement):
         List of additional args
     """
 
-    score_total = 100
+    score_total = 1
     achievement_name = 'Mislead latter'
     achievement_description = ''
     
@@ -589,14 +623,19 @@ class WheelOfFortune(Achievement):
         )
 
 
-    def _score(self):
+    def verify(self):
         chars = 'qwertyuiopasdfghjklçzxcvbnm'
-        _size = random.randint(1, 5)
-        _sel_chars = random.choices(chars, k=_size)
+        self._size = random.randint(1, 5)
+        _sel_chars = random.choices(chars, k=self._size)
         for _char in _sel_chars:
             if not _char in self.args[0]:
-                return
-        self.score_current += _size
+                return False
+            return True
+
+
+    def _score(self):
+        if self.verify():
+            self.score_current += self._size
 
 
 class Charge(Achievement):
@@ -628,9 +667,15 @@ class Charge(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        message = self.args
+        if len(message.content) >= 10 and message.content.upper() == message.content:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class MakeItDouble(Achievement):
@@ -694,9 +739,15 @@ class Lvl20Bard(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        message = self.args
+        if message.content.startswith('!play') or message.content.startswith('~>play'):
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class SOFAMOUS(Achievement):
@@ -727,9 +778,14 @@ class SOFAMOUS(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'nobility') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class MyHouseMyLife(Achievement):
@@ -760,9 +816,14 @@ class MyHouseMyLife(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'citizen') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class BloodStained(Achievement):
@@ -793,9 +854,14 @@ class BloodStained(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'executioner') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class Blessed(Achievement):
@@ -826,9 +892,14 @@ class Blessed(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'clergy') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class Congratulations(Achievement):
@@ -859,9 +930,14 @@ class Congratulations(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'bunda_mole') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class BrainWashed(Achievement):
@@ -892,9 +968,14 @@ class BrainWashed(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'servant') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class Ni(Achievement):
@@ -925,9 +1006,14 @@ class Ni(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'ni') in self.args[1]:
+            return True
+        return False
 
     def _score(self):
-        self.score_current += 1
+        if self.verify():
+            self.score_current += 1
 
 
 class UnForastero(Achievement):
@@ -958,6 +1044,229 @@ class UnForastero(Achievement):
              self.score_total, self._score, db_client
         )
 
+    def verify(self):
+        if self.args[0].get_attr('custom', 'subhuman') in self.args[1]:
+            return True
+        return False
+
+    def _score(self):
+        if self.verify():
+            self.score_current += 1
+
+
+class CanineHero(Achievement):
+    """
+    Canine hero achievement. earned when
+    user sends 1k of links
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1000
+    achievement_name = 'Canine hero'
+    achievement_description = 'I did not ask anything, you fool.. but... t-thanks'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def verify(self):
+        if re.match(r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
+             self.args[0]):
+            return True
+        return False
+
+
+    def _score(self):
+        if self.verify():
+            self.score_current += 1
+
+
+class Heresy(Achievement):
+    """
+    Heresy achievement. earned when a user leaves the server
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Heresy'
+    achievement_description = 'Shame. shame. shame. shame. shame.'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
 
     def _score(self):
         self.score_current += 1
+
+
+class BurnTheImpostor(Achievement):
+    """
+    Burn the impostor achievement. earned when a user 
+    change its nickname to IwakuraBot
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Burn the impostor'
+    achievement_description = 'I\'M THE REAL ONE!! DON\'T TRUST HIM!!!'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+
+    def verify(self):
+        if self.args[0] == 'IwakuraBot':
+            return True
+        return False
+
+
+    def _score(self):
+        if self.verify():
+            self.score_current += 1
+
+
+class LeaveTheDoorOpen(Achievement):
+    """
+    Leave the door open achievement. earned when a user 
+    gains the role pesant
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Leave the door open'
+    achievement_description = 'There are people who come to stay, There are people who go to never again'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+    def verify(self):
+        if self.args[0].get_attr('custom', 'pesant') in self.args[1]:
+            return True
+        return False
+
+    def _score(self):
+        if self.verify():
+            self.score_current += 1
+
+
+class HappyHour(Achievement):
+    """
+    Happy hour achievement. earned when a user joins the voice chat
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'Happy hour'
+    achievement_description = 'On victory, you deserve beer, in defeat, you need it.'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+    def _score(self):
+        self.score_current += 1
+
+
+class TheRuler(Achievement):
+    """
+    The Ruler achievement. earned when a earns the role 'Keepers of order'
+
+    Parameters
+    ----------
+
+    discord_user_id : int
+        Discord user id from user which triggered the achievement
+
+    db_client : DbClient
+        Instance of DbClient class
+
+    args : list [Optional]
+        List of additional args
+    """
+
+    score_total = 1
+    achievement_name = 'The Ruler'
+    achievement_description = 'Well, I didn’t vote for you'
+    
+    def __init__(self, discord_user_id, db_client, args=None):
+        self.args = args
+        super().__init__(discord_user_id, self.achievement_name, self.achievement_description,
+             self.score_total, self._score, db_client
+        )
+
+    def verify(self):
+        if self.args[0].get_attr('custom', 'keeper_of_order') in self.args[1]:
+            return True
+        return False
+
+    def _score(self):
+        if self.verify():
+            self.score_current += 1

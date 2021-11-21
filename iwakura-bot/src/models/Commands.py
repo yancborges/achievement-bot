@@ -17,6 +17,8 @@ from .Quote import Quote
 from .Exceptions import *
 from .CustomCommand import CustomCommand
 
+from .Events.jogoDoPichu import JogoDoPichu as Pichu
+
 class IwakuraCommands:
     """
     Command class. Its goal its to handle commands based
@@ -33,6 +35,10 @@ class IwakuraCommands:
         Bot class instance
     """
 
+    # TODO: Add other messages
+    # TODO: Improve, this is garbage. Each method should have its own help message inside itself.
+    # TODO: Meditate about re-doing all this system using a sub class to each command, 
+    #       so the TODO above can be reached easily.
     help_messages = {
         'showachievements': '**showachievements command.** It shows all achievements from a given user.\n\
 **syntax:** >showachievement __@user__\'If user is none, shows your own achievements',
@@ -117,7 +123,7 @@ class IwakuraCommands:
 
     def __usr_as_argument(func):
         """
-        User wraper. Validates if first argument is a  valid user mention
+        User wraper. Validates if first argument is a valid user mention
         """
         async def inner(self, context, text, args):
             if args:
@@ -223,6 +229,42 @@ class IwakuraCommands:
             await self.iwakura_client.trigger_achievement(context.author.id, MakeItDouble)
         await context.channel.send(msg)
 
+    """
+    This is a feature for a future version.
+    Im to tired to build a whole event based with money transactions
+    game. But I started it, and i'll finish it. Someday.
+
+    For now I just want to publish the main achievement bot afap.
+
+    @__usr_as_argument
+    async def __cmd_pichu_start(self, context, text, args):
+        pichu = Pichu(self.iwakura_client.db_client, self.discord_client)
+        pichu.start_event()
+        await context.channel.send(f'A new *Jogo do Pichu* has started!\nMake your bet sending >pichu <amount>\nGood luck!')
+
+    async def __cmd_pichu_get_active(self, context, text, args):
+        pichu = Pichu(self.iwakura_client.db_client, self.discord_client)
+        pichu_event = pichu.load_active_game()
+        if pichu_event:
+            await context.channel.send(f'Game active! Finish date: ' + pichu_event['planned_end_date'] + '\nTotal bet: ' + str(pichu_event['total_bet']))
+        else:
+            await context.channel.send('Game is not active :(\nYou can ask an Admin to start it!')
+
+    async def __cmd_pichu_bet(self, context, text, args):
+        pichu = Pichu(self.iwakura_client.db_client, self.discord_client)
+        coins = args[0]
+        if not coins.isdigit():
+            await context.channel.send('Error! You must use a number to bet your tips')
+        coins = int(coins)
+        bet = pichu.bet(context.author.id, coins)
+        if bet == 'free':
+            await context.channel.send('For your first bet, you won 50 galerinha-coins! Have fun, I\'ve placed 10 coins to you for free!')
+        elif bet < 0:
+            await context.channel.send(f'You dont have enough galerinha-coins to bet :(\nYou have only {coins - (bet * -1)} galerinha coins')
+        else:
+            await context.channel.send(f'Done! Bet made! Now cross your fingers!!\n Remaning galerinha coins: {bet}')
+    """
+
     @__usr_as_argument
     async def __cmd_addquote(self, context, text, args):
         """
@@ -264,6 +306,7 @@ class IwakuraCommands:
             _quote["creator"] = await self.iwakura_client.discord_client.fetch_user(_quote["creator_id"])
             msg = f'"_{_quote["quote"]}_"\n\t\t\t\t\t\t\t - **{_quote["author"].display_name}**, {_creation}'
         else:
+            # TODO: To Allow quotes from member, date or ID
             msg = 'Sorry, this part is not ready yet :('
 
         await context.channel.send(msg)

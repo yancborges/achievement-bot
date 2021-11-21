@@ -99,7 +99,6 @@ class Bot:
         
         if not cls.completed:
             cls.score()
-            print(f'Triggering {cls.__class__} for user {context}')
             cls.update(self.db_client)
 
         if cls.completed_by_last_action:

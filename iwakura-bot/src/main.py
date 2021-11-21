@@ -9,6 +9,7 @@ import os
 import discord
 import re
 import time
+from discord import user
 import requests
 
 from discord.ext.commands import Bot
@@ -18,7 +19,6 @@ from models.Bot import Bot
 from models.BehaviorAchievements import *
 from models.Commands import *
 from models.InternalConfigs import InternalConfigs
-
 
 # Discord configuration
 intents = discord.Intents.default()
@@ -32,18 +32,24 @@ cmd = IwakuraCommands(client_discord, iwakura)
 PREFIX = config.get_attr('discord', 'cmd_prefix')
 
 
-@client_discord.event
-async def on_member_remove(user):
-    channel = None
-    for chn in user.guild.channels:
-        if (chn.position == 0 or chn.name == 'geral') and chn.type.name == 'text':
-            channel = chn
-            break
+## Seems that bot cant message users with no relashionship to them.
+## So if the user is kicked of banned from the channel, this bound is unamade,
+## and discord API returns a 403 error.
 
-    await channel.send('https://media.discordapp.net/attachments/372809185483685899/857738774054174760/klipartz.com_2.png?width=300&height=670')
-    await channel.send(f'{user.display_name} HAS BEEN **EXECUTED**,\nMay god have mercy of this soul.')
-    time.sleep(8)
-    await channel.send('PARTY TIME!!! https://www.youtube.com/watch?v=TDyG4YNUXcI')
+#@client_discord.event
+#async def on_member_remove(user):
+#    channel = None
+#    await iwakura.trigger_achievement(user.id, Heresy)
+
+    #for chn in user.guild.channels:
+    #    if (chn.position == 0 or chn.name == 'geral') and chn.type.name == 'text':
+    #        channel = chn
+    #        break
+    #
+    #await channel.send('https://media.discordapp.net/attachments/372809185483685899/857738774054174760/klipartz.com_2.png?width=300&height=670')
+    #await channel.send(f'{user.display_name} HAS BEEN **EXECUTED**,\nMay god have mercy of this soul.')
+    #time.sleep(8)
+    #await channel.send('PARTY TIME!!! https://www.youtube.com/watch?v=TDyG4YNUXcI')
 
 
 @client_discord.event
@@ -62,6 +68,25 @@ async def on_member_join(member):
     """
 
     await iwakura.trigger_achievement(member.id, YouAreFinallyAwake)
+
+
+@client_discord.event
+async def on_voice_state_update(member, before, after):
+    """
+    Triggered when a user joins at a voice channel
+    """
+
+    users_before = []
+    users_after = []
+    if before.channel is not None and before.channel.members is not None:
+        users_before = [buser.id for buser in before.channel.members]
+        
+    if after.channel is not None and after.channel.members is not None:
+        users_after = [auser.id for auser in after.channel.members]
+        
+    joined = list(set(users_after) - set(users_before))
+    for user_id in joined:
+        await iwakura.trigger_achievement(user_id, HappyHour)
 
 
 @client_discord.event
@@ -123,6 +148,10 @@ async def on_member_update(before, after):
     roles_gained = [r for r in roles_after if r not in roles_before]
     roles_lost = [r for r in roles_before if r not in roles_after]
     
+    ## For some reason, discord does not provide the old version of user avatar.
+    ## So, as far as i know, there is no way to detect the event of avatar change,
+    ## since mutiple actions are bound to this API call.
+    #
     # Triggering achievements based on avatar
     #
     # I have to compare them based on bytes,
@@ -134,26 +163,17 @@ async def on_member_update(before, after):
     #    await iwakura.trigger_achievement(after.id, Doppleganger)
 
     # Triggering achievements based on roles
-    if config.get_attr('custom', 'citizen') in roles_gained:
-        await iwakura.trigger_achievement(after.id, MyHouseMyLife)
-
-    if config.get_attr('custom', 'nobility') in roles_gained:
-        await iwakura.trigger_achievement(after.id, SOFAMOUS)
-
-    if config.get_attr('custom', 'executioner') in roles_gained:
-        await iwakura.trigger_achievement(after.id, BloodStained)
-
-    if config.get_attr('custom', 'clergy') in roles_gained:
-        await iwakura.trigger_achievement(after.id, Blessed)
-
-    if config.get_attr('custom', 'bunda_mole') in roles_gained:
-        await iwakura.trigger_achievement(after.id, Congratulations)
-
-    if config.get_attr('custom', 'servant') in roles_gained:
-        await iwakura.trigger_achievement(after.id, BrainWashed)
-
-    if config.get_attr('custom', 'subhuman') in roles_gained:
-        await iwakura.trigger_achievement(after.id, UnForastero)
+    if not after.bot:
+        await iwakura.trigger_achievement(after.id, BurnTheImpostor, args=[after.display_name])
+        await iwakura.trigger_achievement(after.id, LeaveTheDoorOpen, args=[config, roles_gained])
+        await iwakura.trigger_achievement(after.id, MyHouseMyLife, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, SOFAMOUS, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, BloodStained, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, Blessed, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, Congratulations, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, BrainWashed, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, UnForastero, [config, roles_gained])
+        await iwakura.trigger_achievement(after.id, Ni, [config, roles_gained])
 
 
 @client_discord.event
@@ -171,30 +191,17 @@ async def on_message(message):
     else:
         
         # Based on category
-        if hasattr(message.channel, 'category') and message.channel.category.id == config.get_attr('custom', 'lewd_category'):
-            for att in message.attachments:
-                if re.findall(r'(\.((png)|(jpeg)|(jpg)|(gif)))$', att.url):
-                    await iwakura.trigger_achievement(message.author.id, JoinTheBowdyHouse)
+        await iwakura.trigger_achievement(message.author.id, JoinTheBowdyHouse, args=[config, message])
 
         # Based on message content
-        if re.findall(r'<@!\d+>', message.content):
-            await iwakura.trigger_achievement(message.author.id, HeraldIntern)
-
-        if '!kdgauga' in message.content or '!diegao' in message.content:
-            await iwakura.trigger_achievement(message.author.id, AncientKnowledge)
-
-        if 'k' in message.content:
-            await iwakura.trigger_achievement(message.author.id, TheJester, args=message)
-
-        if message.content.startswith('!play') or message.content.startswith('~>play'):
-            await iwakura.trigger_achievement(message.author.id, Lvl20Bard)
-
-        if len(message.content) >= 10 and message.content.upper() == message.content:
-            await iwakura.trigger_achievement(message.author.id, Charge)
+        await iwakura.trigger_achievement(message.author.id, HeraldIntern, args=[message.content])
+        await iwakura.trigger_achievement(message.author.id, AncientKnowledge, args=[message.content])
+        await iwakura.trigger_achievement(message.author.id, TheJester, args=message)
+        await iwakura.trigger_achievement(message.author.id, Lvl20Bard, args=message)
+        await iwakura.trigger_achievement(message.author.id, Charge, args=message)
 
         # Based on channel
-        if message.channel.id == config.get_attr('custom', 'pokemon_channel'):
-            await iwakura.trigger_achievement(message.author.id, BeastMaster)
+        await iwakura.trigger_achievement(message.author.id, BeastMaster, args=[config, message])
         
         # No requirement
         await iwakura.trigger_achievement(message.author.id, PigeonIntern)
@@ -203,6 +210,9 @@ async def on_message(message):
         await iwakura.trigger_achievement(message.author.id, PigeonNoble)
         await iwakura.trigger_achievement(message.author.id, PigeonDeity)
         await iwakura.trigger_achievement(message.author.id, WheelOfFortune, args=[message.content])
+
+        # Sending links
+        await iwakura.trigger_achievement(message.author.id, CanineHero, args=[message.content])
         
         
 client_discord.run(config.get_attr('api', 'discord_token'))
