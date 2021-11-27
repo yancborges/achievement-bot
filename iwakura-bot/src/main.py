@@ -5,19 +5,13 @@ with your bot tokens when running this scripts
 Running it allows bot to connect to discord automatically.
 """
 
-import os
 import discord
-import re
-import time
-from discord import user
-import requests
 
-from discord.ext.commands import Bot
 from discord.ext import commands
 
 from models.Bot import Bot
-from models.BehaviorAchievements import *
-from models.Commands import *
+from models.BehaviorAchievements import * #pylint: disable=wildcard-import, unused-wildcard-import
+from models.Commands import * #pylint: disable=wildcard-import, unused-wildcard-import
 from models.InternalConfigs import InternalConfigs
 
 # Discord configuration
@@ -57,7 +51,6 @@ async def on_ready():
     """
     Triggered when bot successfully connects to discord api
     """
-
     print(f'{client_discord.user} has connected to Discord!')
 
 
@@ -66,7 +59,6 @@ async def on_member_join(member):
     """
     Triggered when a member joins the server
     """
-
     await iwakura.trigger_achievement(member.id, YouAreFinallyAwake)
 
 
@@ -75,7 +67,6 @@ async def on_voice_state_update(member, before, after):
     """
     Triggered when a user joins at a voice channel
     """
-
     users_before = []
     users_after = []
     if before.channel is not None and before.channel.members is not None:
@@ -94,7 +85,6 @@ async def on_raw_reaction_add(payload):
     """
     Triggered when a emoji/reaction is added to a message
     """
-
     if not payload.member.bot:
         await iwakura.trigger_achievement(payload.member.id, Mimic)
 
@@ -104,7 +94,6 @@ async def on_message_edit(before, after):
     """
     Triggered whenever a message is edited
     """
-
     # Ignoring interactions with other bots
     if not after.author.bot:
         await iwakura.trigger_achievement(after.author.id, TimeTraveler)
@@ -115,7 +104,6 @@ async def on_message_delete(message):
     """
     Triggered whenever a message is deleted
     """
-
     # Ignoring interactions with other bots
     if not message.author.bot:
         await iwakura.trigger_achievement(message.author.id, LibraryOfAlexandria)
@@ -139,7 +127,6 @@ async def on_member_update(before, after):
     after : User
         User instance after event triggers
     """
-    
     # Getting changed roles
     role_changed = None
     roles_before = [brole.id for brole in before.roles]
@@ -162,8 +149,8 @@ async def on_member_update(before, after):
     # if bimage != aimage:
     #    await iwakura.trigger_achievement(after.id, Doppleganger)
 
-    # Triggering achievements based on roles
     if not after.bot:
+        # Triggering achievements based on roles
         await iwakura.trigger_achievement(after.id, BurnTheImpostor, args=[after.display_name])
         await iwakura.trigger_achievement(after.id, LeaveTheDoorOpen, args=[config, roles_gained])
         await iwakura.trigger_achievement(after.id, MyHouseMyLife, [config, roles_gained])
@@ -182,7 +169,6 @@ async def on_message(message):
     Triggered when a message is sent
     on any channel where bot has access to read from
     """
-    
     if message.author.bot:
         # Ignoring interactions with other bots
         return

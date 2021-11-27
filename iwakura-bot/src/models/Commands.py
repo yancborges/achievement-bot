@@ -17,7 +17,7 @@ from .Quote import Quote
 from .Exceptions import *
 from .CustomCommand import CustomCommand
 
-from .Events.jogoDoPichu import JogoDoPichu as Pichu
+#from .Events.jogoDoPichu import JogoDoPichu as Pichu
 
 class IwakuraCommands:
     """
@@ -33,23 +33,12 @@ class IwakuraCommands:
 
     iwakura_client : Bot
         Bot class instance
-    """
-
-    # TODO: Add other messages
-    # TODO: Improve, this is garbage. Each method should have its own help message inside itself.
-    # TODO: Meditate about re-doing all this system using a sub class to each command, 
-    #       so the TODO above can be reached easily.
-    help_messages = {
-        'showachievements': '**showachievements command.** It shows all achievements from a given user.\n\
-**syntax:** >showachievement __@user__\'If user is none, shows your own achievements',
-        'help': 'Seriously?',
-        'gimme': '||It gives you an achievement||'
-    }
-    
+    """    
     def __init__(self, discord_client, iwakura_client):
         self.discord_client = discord_client
         self.iwakura_client = iwakura_client
         self._cls_prefix = '_IwakuraCommands__cmd_'
+
 
     async def manage(self, message):
         """
@@ -69,6 +58,8 @@ class IwakuraCommands:
             await context.channel.send(
                 'Error. No command given. Use >help to see all commands'
             )
+        
+        # Looking for patterns as <*>, command arguments must go inside brackets
         args = re.findall(r'<[,\w\d!@\. \'\"\/:\-=\?]+>', text.split(cmd)[1])
         args = [a.replace('<','').replace('>','') for a in args]
         if ' ' in args:
@@ -82,12 +73,20 @@ class IwakuraCommands:
             )
             return
 
+        # Looking for class methods trying to match command name
+        # TODO: Optimize this with a command_search function
         self_members = inspect.getmembers(self)
         if args and args[0] == 'help':
+            # If first argument is 'help', then bot
+            # sends the __doc__ value for the matched function
             try:
-                await context.channel.send(
-                    self.help_messages[cmd]
-                )
+                for _method in self_members:
+                    _method_path = _method[0]
+                    _method_name = _method_path.replace(self._cls_prefix, '')
+                    _method_function = _method[1]
+                    if _method_path.startswith(self._cls_prefix):
+                        if _method_name == cmd:
+                            await context.channel.send(str(_method_function.__doc__))
             except KeyError:
                 await context.channel.send('This command is invalid or does not have any help doc')
             finally:
@@ -102,12 +101,15 @@ class IwakuraCommands:
                     await _method_function(context, text, args)
                     return
         
+        # If no function is matched with  the requested name, command
+        # is searched into custom command database table.
         custom_cmd = self.iwakura_client.db_client.get(CustomCommand.TABLE_NAME, {'name': cmd})
         if custom_cmd:
             await context.channel.send(custom_cmd[0]["text"])
             return
 
         await context.channel.send('Error, unknown command. use >help for see all commands')
+
 
     def __allow_admin(func):          
         """
@@ -120,6 +122,7 @@ class IwakuraCommands:
             else:
                 await context.channel.send('This command is admin only, sorry :(')    
         return inner
+
 
     def __usr_as_argument(func):
         """
@@ -135,25 +138,32 @@ class IwakuraCommands:
                 # TODO: Try to fetch user here
             await func(self, context, text, args)
         return inner
-            
+
+
     async def __cmd_help(self, context, text, args):
         """
-        Help command. It shows all other commands
-        iwakura has.
+        Help command. It shows all other commands iwakura has.
         """
+        test = 0
         self_members = inspect.getmembers(self)
         cmds = [
             _m[0].replace(self._cls_prefix, '') for _m in self_members if _m[0].startswith(self._cls_prefix)
         ]
         cmds_str = ', '.join(cmds)
-        msg = f'Commands: {cmds_str}.\nPrefix for all is \'>\'\nUse >__command__ <help> for command instructions'
+        ccmds = self.iwakura_client.db_client.get(CustomCommand.TABLE_NAME, {})
+        ccmds_str = ', '.join([c['name'] for c in ccmds])
+        msg = f'Commands: {cmds_str}'
+        msg += f'\nCustom commands: {ccmds_str}'
+        msg += '\nPrefix for all is \'>\'\nUse >__command__ <help> for command instructions'
         await context.channel.send(msg)
-        
+
+
     async def __cmd_gimme(self, context, text, args):
         """
-        Gives an achievement to the user
+        ||Gives an achievement to the user||
         """
         await self.iwakura_client.trigger_achievement(context.author.id, YouTried)
+
 
     async def __cmd_showachievements(self, context, text, args):
         """
@@ -168,29 +178,31 @@ class IwakuraCommands:
         await self.iwakura_client.show_achievements(context, target)
         await context.channel.send('Sent unlocked achievements via PM')
 
+
     async def __cmd_play(self, context, text, args):
         """
-        Triggers Im a Rouge achievement and makes the bot
-        join voice chat if user is connected. Otherwise
-        the achievement is not triggered
+        Makes the bot join voice chat if user is connected.
         """
-
         # TODO: Join voice channel here, then leave sending a message
         await self.iwakura_client.trigger_achievement(context.author.id, ImARogue)
+
 
     @__allow_admin
     async def __cmd_health(self, context, text, args):
        """
-       Says if she is ok
+       Returns if the Bot is running smoothly.
        """
        await context.channel.send('*Lain handshakes*')        
 
+
+    @__allow_admin
     async def __cmd_quit(self, context, text, args):
         """
-        Closes client connection
+        Disconnects bot from discord
         """
         await context.channel.send('*Lain gonna sleep, good night*')
         await self.discord_client.close()
+
 
     async def __cmd_disconnect(self, context, text, args):
         """
@@ -200,10 +212,11 @@ class IwakuraCommands:
             if(x.server_id == context.channel.guild.id):
                 await x.disconnect()
 
+
     @__usr_as_argument
     async def __cmd_award(self, context, text, args):
         """
-        Triggers a GivenAchievement to the user passed as argument
+        Creates a custom achievement to a given user.
         syntax: >award @user <achievement name> <achievement description>
         """
         # TODO: Make user argument multiple
@@ -216,9 +229,10 @@ class IwakuraCommands:
         await self.iwakura_client.trigger_achievement(context.author.id, GivenAchievement, args)
         await context.channel.send('Achievement has been given to the user. Congratz!')
 
+
     async def __cmd_kdgauga(self, context, text, args):
         """
-        Send a message from Ariel
+        Sends a message from Ariel
         """
         #layout = random.randint(1, 10)
         farm_a = random.randint(0,300)
@@ -228,6 +242,7 @@ class IwakuraCommands:
         if farm_a / 2 == farm_b:
             await self.iwakura_client.trigger_achievement(context.author.id, MakeItDouble)
         await context.channel.send(msg)
+
 
     """
     This is a feature for a future version.
@@ -265,13 +280,14 @@ class IwakuraCommands:
             await context.channel.send(f'Done! Bet made! Now cross your fingers!!\n Remaning galerinha coins: {bet}')
     """
 
+
     @__usr_as_argument
     async def __cmd_addquote(self, context, text, args):
         """
         Adds a quote to database
         syntax: >addquote @author <quote> <quote date [optional]>
         """
-        if not args or len(args) > 2:
+        if not args or len(args) < 2:
             await context.channel.send(
                 'Error, wrong syntax. use >addquote @<user mention> <quote text> <quote date [optional]>'
             )
@@ -286,6 +302,7 @@ class IwakuraCommands:
         q.save()
 
         await context.channel.send('Quote saved')
+
 
     async def __cmd_quote(self, context, text, args):
         """
@@ -311,6 +328,7 @@ class IwakuraCommands:
 
         await context.channel.send(msg)
 
+
     async def __cmd_addcmd(self, context, text, args):
         """
         Adds a custom command to the base
@@ -320,7 +338,7 @@ class IwakuraCommands:
             await context.channel.send('Error, Wrong syntax. Use >addcmd <command name> <desired text>')
             return
 
-        cmd_name = args[0]
+        cmd_name = args[0].replace(' ', '_')
         cmd_text = args[1]
 
         self_members = inspect.getmembers(self)
@@ -339,11 +357,15 @@ class IwakuraCommands:
         except AlreadyInUse as ex:
             await context.channel.send(ex)
         else:
-            await context.channel.send('Command saved successfully')
+            msg = 'Command saved successfully!'
+            if ' ' in args[0]:
+                msg += f'\nNote: Spaces replaced with underscores. (command name: {cmd_name})'
+            await context.channel.send(msg)
+
 
     async def __cmd_delcmd(self, context, text, args):
         """
-        Deletes a command. User can only deletes removed created by theirself
+        Deletes a command. User can only delete their own commands
         syntax: >delcmd <command name>
         """
         if not args:

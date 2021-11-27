@@ -13,12 +13,22 @@ from .db_client import DbClient
 
 from PIL import Image
 from PIL import ImageFont
-from PIL import ImageDraw 
+from PIL import ImageDraw
 
 class Bot:
     """
-    """
+    Bot class. It handles the majority of Bot services, including
+    commands, achievements, etc.
 
+    Parameters
+    ----------
+
+    discord_client : discord
+        Discord client object
+
+    iwakura_client : Bot
+        Bot class instance
+    """
     ach_classes = BehaviorAchievements
     
     def __init__(self, discord_client, environment, config):
@@ -176,6 +186,7 @@ class Bot:
             instance of Achievement class
         """
         
+        ach = achievement.to_json()
         # Base coord values
         x_max = 400
         y_max = 140
@@ -187,9 +198,8 @@ class Bot:
         y_desc = 65
         x_ann = 120
         y_ann = 10
-        x_foot = 80
+        x_foot = (x_max / 2) - (int(len(ach['achievement_earning']) / 2) * 5.7)
         y_foot = 120
-        ach = achievement.to_json()
 
         # Base empty image
         new_im = Image.new('RGB', (x_max, y_max))
@@ -203,8 +213,8 @@ class Bot:
         desc_font = ImageFont.truetype("arial.ttf", 14)
         foot_font = ImageFont.truetype("arial.ttf", 12)
 
-        def write_lines(text, font, img, x, y, color):
-            lines = textwrap.wrap(text, width=30)
+        def write_lines(text, font, img, x, y, color, max_size=40):
+            lines = textwrap.wrap(text, width=max_size)
             y_text = 0
             for line in lines:
                 width, height = font.getsize(line)
@@ -213,10 +223,10 @@ class Bot:
         
         # Writing texts
         text_im = ImageDraw.Draw(new_im)
-        write_lines('Congratulations! You have unlocked:', desc_font, text_im, x_ann, y_ann, (255,255,255))
+        write_lines('Congratulations! You have unlocked:', desc_font, text_im, x_ann, y_ann, (255,255,255), max_size=100)
         write_lines(ach["achievement_name"], title_font, text_im, x_title, y_title, (255,255,255))
         write_lines(ach["achievement_description"], desc_font, text_im, x_desc, y_desc, (135,135,135))
-        text_im.text((x_foot, y_foot),'You can unlock more by interacting at the server!',(0, 202, 224),font=foot_font)
+        text_im.text((x_foot, y_foot),ach['achievement_earning'],(0, 202, 224),font=foot_font)
 
         return new_im
 

@@ -32,11 +32,11 @@ class GivenAchievement(Achievement):
     """
     
     score_total = -1
-    icon_url = os.getenv('IWK__ACH___GivenAchievement')
+    achievement_earning = 'This is a unique award by members of the server!'
 
     def __init__(self, discord_user_id, db_client, achievement_name, achievement_description):
         super().__init__(int(discord_user_id), achievement_name, achievement_description,
-            self.icon_url, self.score_total, self._score, db_client
+            self.score_total, self._score, db_client
         )
 
     def _score(self):

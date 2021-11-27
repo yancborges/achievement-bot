@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 This file contains the base achievement model.
 This class must be inherited to all other achievement models.
@@ -37,7 +38,7 @@ class Achievement:
     """
 
     TABLE_NAME = 'progress'
-    
+
     def __init__(self, discord_user_id, achievement_name, achievement_description,
         score_total, score_func, db_client
     ):
@@ -52,11 +53,11 @@ class Achievement:
         self.completed_by_last_action = False
         # self.complete_func = complete_func
 
+
     def load_achievement(self):
         """
         Loads the current achievement from database
         """
-
         query = {
             'discord_user_id': self.discord_user_id,
             'achievement_id': self.achievement_id
@@ -77,11 +78,16 @@ class Achievement:
         self.completed = ach["completed"]
         self.last_update = ach["last_update"]
 
+
     @property
     def icon_url(self):
+        """
+        Returns the URL for achievement logo.
+        """
         # I could not think a better way to do this
         # Because it would need to pass config object to all classes.
         return os.getenv('IWK__ACH__' + self.__class__.__name__.upper())
+
 
     def score(self):
         """
@@ -89,11 +95,11 @@ class Achievement:
         If current counter reachs total score,
         call self.complete function
         """
-
         if not self.completed:
             self.score_func()
             if self.score_current >= self.score_total:
                 self.complete()
+
 
     def complete(self):
         """
@@ -101,25 +107,26 @@ class Achievement:
         This unlocks achievement for the user.
         Its called when current score reaches total score
         """
-        # Maybe later each achievement gets its 
+        # Maybe later each achievement gets its
         # own completion funciton
         #
         # self.complete_func(self._document)
-        self.completed = True
-        self.unlock_date = datetime.today().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        self.last_update = self.unlock_date
+        self.completed = True #pylint: disable=attribute-defined-outside-init
+        self.unlock_date = datetime.today().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ') #pylint: disable=attribute-defined-outside-init
+        self.last_update = self.unlock_date #pylint: disable=attribute-defined-outside-init
         self.completed_by_last_action = True
+
 
     def to_json(self):
         """
         Returns current object as a json object
         """
-
         return {
             'discord_user_id': self.discord_user_id,
             'achievement_id': self.achievement_id,
             'achievement_name': self.achievement_name,
             'achievement_description': self.achievement_description,
+            'achievement_earning': self.achievement_earning, #pylint: disable=no-member
             'unlock_date': self.unlock_date,
             'icon_url': self.icon_url,
             'score_current': self.score_current,
@@ -128,13 +135,14 @@ class Achievement:
             'last_update': self.last_update
         }
 
+
     def get_id(self):
         """
         Returns an unique id for each achievement.
         (But it is only the name encoded with base64 :()
         """
-
         return base64.b64encode(self.achievement_name.encode()).decode('utf-8')
+
 
     def update(self, db_client):
         """
@@ -146,7 +154,6 @@ class Achievement:
         db_client : DbClient
             DbClient object class
         """
-
         db_client.update(
             self.TABLE_NAME,
             {
