@@ -39,5 +39,6 @@ class GivenAchievement(Achievement):
             self.score_total, self._score, db_client
         )
 
+
     def _score(self):
         self.score_current += 1

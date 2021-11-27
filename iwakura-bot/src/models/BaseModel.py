@@ -51,6 +51,7 @@ class Achievement:
         self.score_total = score_total
         self.score_func = score_func
         self.completed_by_last_action = False
+        self._scored = False
         # self.complete_func = complete_func
 
 
@@ -86,7 +87,9 @@ class Achievement:
         """
         # I could not think a better way to do this
         # Because it would need to pass config object to all classes.
-        return os.getenv('IWK__ACH__' + self.__class__.__name__.upper())
+        if self.__class__.__name__ == 'GivenAchievement':
+            return os.getenv('IWK__ACH__' + self.__class__.__name__)
+        return os.getenv('IWK__ACH__' + self.__class__.__name__)
 
 
     def score(self):
@@ -96,9 +99,15 @@ class Achievement:
         call self.complete function
         """
         if not self.completed:
+            score_before = self.score_current
             self.score_func()
+            score_after = self.score_current
             if self.score_current >= self.score_total:
                 self.complete()
+            if score_before == score_after:
+                self._scored = False
+            else:
+                self._scored = True
 
 
     def complete(self):

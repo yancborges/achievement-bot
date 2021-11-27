@@ -19,7 +19,7 @@ class InternalConfigs:
 
         for var, value in os.environ.items():
             if var.startswith('IWK__'):
-                _var = var.replace('IWK__', '')
+                _var = var.replace('IWK__', '').upper()
                 self.__vars[_var] = value
 
     

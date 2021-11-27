@@ -109,7 +109,8 @@ class Bot:
         
         if not cls.completed:
             cls.score()
-            cls.update(self.db_client)
+            if cls._scored:
+                cls.update(self.db_client)
 
         if cls.completed_by_last_action:
             await self.send_notification(send_to, cls)
@@ -209,9 +210,9 @@ class Bot:
         new_im.paste(im, (x_logo,y_logo), im)
         
         # Instancing fonts
-        title_font = ImageFont.truetype("arial.ttf", 18)
-        desc_font = ImageFont.truetype("arial.ttf", 14)
-        foot_font = ImageFont.truetype("arial.ttf", 12)
+        title_font = ImageFont.truetype(self.config.get_attr('global', 'fontfile'), 18)
+        desc_font = ImageFont.truetype(self.config.get_attr('global', 'fontfile'), 14)
+        foot_font = ImageFont.truetype(self.config.get_attr('global', 'fontfile'), 12)
 
         def write_lines(text, font, img, x, y, color, max_size=40):
             lines = textwrap.wrap(text, width=max_size)
@@ -254,8 +255,8 @@ class Bot:
         y_index = y_start
 
         # Instancing fonts
-        title_font = ImageFont.truetype("arial.ttf", 20)
-        desc_font = ImageFont.truetype("arial.ttf", 18)
+        title_font = ImageFont.truetype(self.config.get_attr('global', 'fontfile'), 20)
+        desc_font = ImageFont.truetype(self.config.get_attr('global', 'fontfile'), 18)
 
         def write_lines(text, font, img, option, x, y):
             lines = textwrap.wrap(text, width=30)
